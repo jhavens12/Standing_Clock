@@ -1,5 +1,4 @@
 from appJar import gui
-
 import datetime
 import pickle
 from pathlib import Path
@@ -23,12 +22,10 @@ def update_label():
     app.clearLabel('L1')
     app.setLabel('L1', time_format(time))
 
-
     try:
         sit_start
     except NameError:
         pass
-
     else:
         if sit_start == None:
             pass
@@ -38,43 +35,43 @@ def update_label():
             current_timer = time-sit_start
 
 def Sit(self):
+    app.removeButton('B2') #remove the sit button
+    app.addImageButton('B1', Stand, "./button_stand.gif", 4,1,2) #add stand button
+    #app.setButton('B1', "STAND") #add stand button
 
     app.clearLabel('Title')
     app.setLabel('Title', 'You Are: Sitting')
-
     print("Sit Button Pressed")
-
     global sit_start
     sit_start = datetime.datetime.now()
     app.clearLabel('L2')
-    #app.setLabel('L2', sit_start)
 
 def Stand(self):
+    app.removeButton('B1') #remove the stand button
+
+    app.addImageButton('B2', Sit, "./button_sit.gif", 4,1,2) #add sit button back
+    #app.setButton('B2', "SIT") #add sit button back
+
     app.clearLabel('Title')
     app.setLabel('Title', 'You Are: Standing')
+
     global sit_end
     global sit_start
     sit_end = datetime.datetime.now() #take time when timer stops
     app.clearLabel('L2') #clear the timer
-    app.setLabel('L2', 'Standing Since: '+time_format(sit_end)) #display when sitting ended
-    print("sit button")
+    app.setLabel('L2', 'Since: '+time_format(sit_end)) #display when sitting ended
+    print("Stand button")
 
-    #need to end timer and save data
     app.clearLabel('L1')
     save_timer(sit_start,sit_end) #dump the sit_start and sit_end variables
     sit_start = None #reset sit_start
 
 def save_timer(sit_start,sit_end):
-    print()
-    print("Sit Started: ")
-    print(sit_start)
-    print("Sit Ended: ")
-    print(sit_end)
+
     difference = sit_end - sit_start
-    print("Sitting For: " +str(difference))
     now = datetime.datetime.now()
     day_of_month = datetime.datetime(now.year, now.month, now.day)
-    #day_of_month = now.year+"/"now.month+"/"+now.day
+
     if day_of_month not in history_dict:
         history_dict[day_of_month] = {}
         history_dict[day_of_month][sit_end] = difference
@@ -98,20 +95,29 @@ def time_format(time):
 def timedelta_format(time):
     return time - datetime.timedelta(microseconds=time.microseconds)
 
-app = gui('Standing' '480x320')
+def checkStop():
+    return app.yesNoBox("Confirm Exit", "Are you sure you want to exit the application?")
 
+
+app = gui('Standing', '300x200')
+
+app.setStopFunction(checkStop)
 app.setPollTime(1000) #update every 1 second
-app.setFont(36)
+app.setFont(size=36)
 app.addLabel('Title','You Are: Standing', 1,1,2)
 app.addLabel('L1', time, 2,1,2)
-app.addLabel('L2', '', 3,1,2)
-app.addButton('B1', Stand, 4,1,1)
-app.setButton('B1', "STAND")
-app.addButton('B2', Sit, 4,2,1)
-app.setButton('B2', "SIT")
-
-app.setButtonFont(12)
 app.setLabelFg('L1', 'blue')
+app.addLabel('L2', '', 3,1,2)
+
+app.addImageButton('B2', Sit, "./button_sit.gif", 4,1,2)
+
+#app.hideTitleBar()
+app.setLocation(0,0)
+app.setResizable(canResize=False)
+app.setTransparency(80)
+app.setBg('white')
+app.setFg('black')
+app.setButtonFont(12)
 
 app.registerEvent(update_label) #has program run the update
 
